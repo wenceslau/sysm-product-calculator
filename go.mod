@@ -1,4 +1,4 @@
-module github.com/devfullcycle/pfa-go
+module github.com/wenceslau/sysm-product-calculator
 
 go 1.23.2
 

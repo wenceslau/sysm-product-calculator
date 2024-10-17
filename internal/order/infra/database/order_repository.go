@@ -3,8 +3,8 @@ package database
 import (
 	"database/sql"
 
-	"github.com/devfullcycle/pfa-go/internal/order/entity"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/wenceslau/sysm-product-calculator/internal/order/entity"
 )
 
 type OriderRepository struct {

@@ -3,8 +3,8 @@ package entity_test
 import (
 	"testing"
 
-	"github.com/devfullcycle/pfa-go/internal/order/entity"
 	"github.com/stretchr/testify/assert"
+	"github.com/wenceslau/sysm-product-calculator/internal/order/entity"
 )
 
 func TestGivenAndEmpty_WhenCreateANewOrder_ThenShouldReceiveAnError(t *testing.T) {

@@ -1,6 +1,6 @@
 package usecase
 
-import "github.com/devfullcycle/pfa-go/internal/order/entity"
+import "github.com/wenceslau/sysm-product-calculator/internal/order/entity"
 
 type OrderInputDTO struct {
 	ID    string
