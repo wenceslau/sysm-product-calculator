@@ -7,6 +7,8 @@ type OrderRepositoryInterface interface {
 	GetTotal() (int, error)
 }
 
+//Create Table orders (id varchar(255), price float, tax float, final_price float)
+
 type Order struct {
 	ID         string
 	Price      float64

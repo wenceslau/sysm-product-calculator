@@ -1,0 +1,22 @@
+http://localhost:9090/ - prometheus
+
+menu status, option targets, and you will see 'rabbitmq' endpoints
+
+
+http://localhost:3000/ - grafana
+
+click on "Add data source" and add prometheus as data source
+configure prometheus URL as http://prometheus:9090
+
+
+Access grafana.com, find the dahsboard area, and find RabbitMQ-Overview
+copy the dashboard id, and import it in grafana (17103)
+
+In grafna dashboard, click on New Dashboard, and import the dashboard, put the code
+and select the prometheus data source, and click import
+
+http://localhost:15672/ - RabbitMQ
+Create a queue and bind to the exchanges
+
+
+docker compose exec goapp bash - to access go app inside docker
