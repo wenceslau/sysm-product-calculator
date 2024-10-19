@@ -4,7 +4,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"sync"
+	"time"
 
 	"github.com/wenceslau/sysm-product-calculator/internal/order/infra/database"
 	"github.com/wenceslau/sysm-product-calculator/internal/order/usecase"
@@ -15,7 +17,7 @@ import (
 
 func main() {
 
-	maxWorkers := 10000
+	maxWorkers := 2
 	wg := sync.WaitGroup{}
 
 	db, err := sql.Open("mysql", "root:root@tcp(localhost:3306)/orders")
@@ -24,8 +26,21 @@ func main() {
 	}
 
 	defer db.Close()
-	respository := database.NewOrderRepository(db)
-	usecaseOrder := usecase.NewCalculateFinalPriceUseCase(respository)
+	repository := database.NewOrderRepository(db)
+	usecaseOrder := usecase.NewCalculateFinalPriceUseCase(repository)
+
+	http.HandleFunc("/total", func(w http.ResponseWriter, r *http.Request) {
+		uc := usecase.NewGetTotalUseCase(repository)
+		output, err := uc.Execute()
+		if err != nil {
+			// Internal Server Error
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		json.NewEncoder(w).Encode(output)
+	})
+	go http.ListenAndServe(":8282", nil)
+
 	ch, err := rabbitmq.OpenChannel()
 	if err != nil {
 		panic(err)
@@ -43,24 +58,11 @@ func main() {
 	fmt.Println("Waiting for workes to finish")
 	wg.Wait()
 
-	// input := usecase.OrderInputDTO{
-	// 	ID:    "1234",
-	// 	Price: 10.0,
-	// 	Tax:   0.1,
-	// }
-
-	// output, err := usecaseOrder.Execute(&input)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	//fmt.Println(output)
-
 }
 
 func worker(deliveryMessage <-chan amqp.Delivery, uc *usecase.CalculateFinalPriceUseCase, workerId int) {
 	for msg := range deliveryMessage {
-		//fmt.Printf("Worker %d: %s\n", workerId, msg.Body)
+		fmt.Printf("Worker %d: %s\n", workerId, msg.Body)
 		var input usecase.OrderInputDTO
 		err := json.Unmarshal(msg.Body, &input)
 		if err != nil {
@@ -73,5 +75,23 @@ func worker(deliveryMessage <-chan amqp.Delivery, uc *usecase.CalculateFinalPric
 		}
 
 		msg.Ack(false)
+	}
+}
+
+func worker2(deliveryMessage <-chan amqp.Delivery, uc *usecase.CalculateFinalPriceUseCase, workerId int) {
+	for msg := range deliveryMessage {
+		var input usecase.OrderInputDTO
+		err := json.Unmarshal(msg.Body, &input)
+		if err != nil {
+			fmt.Println("Error unmarshalling message", err)
+		}
+		input.Tax = 10.0
+		_, err = uc.Execute(&input)
+		if err != nil {
+			fmt.Println("Error unmarshalling message", err)
+		}
+		msg.Ack(false)
+		fmt.Println("Worker", workerId, "processed order", input.ID)
+		time.Sleep(1 * time.Second)
 	}
 }

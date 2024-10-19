@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/wenceslau/sysm-product-calculator/internal/order/entity"
 )
@@ -12,7 +13,12 @@ type OriderRepository struct {
 
 // GetTotal implements entity.OrderRepositoryInterface.
 func (r *OriderRepository) GetTotal() (int, error) {
-	panic("unimplemented")
+	var total int
+	err := r.Db.QueryRow("SELECT COUNT(*) FROM orders").Scan(&total)
+	if err != nil {
+		return 0, err
+	}
+	return total, nil
 }
 
 func NewOrderRepository(db *sql.DB) *OriderRepository {

@@ -20,3 +20,5 @@ Create a queue and bind to the exchanges
 
 
 docker compose exec goapp bash - to access go app inside docker
+
+go build main.go
